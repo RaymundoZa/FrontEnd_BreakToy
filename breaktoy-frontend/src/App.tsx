@@ -13,20 +13,20 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
-  markInStock,
-  markOutOfStock,
 } from './api/products';
 
 const pageSize = 10;
 
 const App: React.FC = () => {
-  // —— Dark mode  ——
+  // —— Dark mode always on ——
   useEffect(() => {
     document.documentElement.classList.add('dark');
   }, []);
 
-  // —— Search by name ——
+  // —— Search & filter state ——
   const [name, setName] = useState<string>('');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [availability, setAvailability] = useState<'all' | 'inStock' | 'outOfStock'>('all');
 
   // —— Data & pagination ——
   const [products, setProducts] = useState<Product[]>([]);
@@ -36,7 +36,16 @@ const App: React.FC = () => {
   const [editing, setEditing] = useState<Product | null>(null);
   const [showForm, setShowForm] = useState<boolean>(false);
 
-  const buildFilters = () => ({ name: name || undefined });
+  const buildFilters = () => ({
+    name: name || undefined,
+    category: selectedCategories.length ? selectedCategories : undefined,
+    inStock:
+      availability === 'inStock'
+        ? true
+        : availability === 'outOfStock'
+        ? false
+        : undefined,
+  });
 
   const loadProducts = async () => {
     const res = await fetchProducts({ ...buildFilters(), page, size: pageSize });
@@ -48,36 +57,40 @@ const App: React.FC = () => {
     setMetrics(res.data);
   };
 
-  // Extract unique categories
+  // extract unique categories whenever products change
   useEffect(() => {
     setCategories(Array.from(new Set(products.map(p => p.category))));
   }, [products]);
 
-  // Reload on name or page change
+  // reload on filters or page change
   useEffect(() => {
     loadProducts();
     loadMetrics();
-  }, [name, page]);
+  }, [name, selectedCategories, availability, page]);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header at the top */}
+    <div className="min-h-screen flex flex-col bg-gray-900 text-gray-100">
+      {/* Header */}
       <Header />
 
-      <main className="flex-grow p-6 bg-gray-900 text-gray-100 transition-colors">
-        {/* Optional: Remove the inline header if Header component already includes one */}
-        {/* Search bar */}
+      <main className="flex-grow p-6">
+        {/* Search + Filters */}
         <SearchBar
           name={name}
           onNameChange={setName}
-          onFilterClick={() => {
+          categories={categories}
+          selectedCategories={selectedCategories}
+          onCategoriesChange={setSelectedCategories}
+          availability={availability}
+          onAvailabilityChange={setAvailability}
+          onSearch={() => {
             setPage(0);
             loadProducts();
             loadMetrics();
           }}
         />
 
-        {/* New Product button */}
+        {/* New Product */}
         <button
           onClick={() => {
             setEditing(null);
@@ -88,7 +101,7 @@ const App: React.FC = () => {
           + New Product
         </button>
 
-        {/* Products list */}
+        {/* Product List */}
         <ProductsList
           products={products}
           onEdit={p => {
@@ -97,12 +110,6 @@ const App: React.FC = () => {
           }}
           onDelete={async id => {
             await deleteProduct(id);
-            loadProducts();
-            loadMetrics();
-          }}
-          onToggleStock={async (id, inStock) => {
-            if (inStock) await markOutOfStock(id);
-            else await markInStock(id);
             loadProducts();
             loadMetrics();
           }}
@@ -127,10 +134,10 @@ const App: React.FC = () => {
           </button>
         </div>
 
-        {/* Metrics below the list */}
+        {/* Metrics below */}
         {metrics && <Metrics metrics={metrics} />}
 
-        {/* Product form modal */}
+        {/* Product Form Modal */}
         {showForm && (
           <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex justify-center items-start p-4 overflow-auto">
             <div className="bg-white dark:bg-gray-800 dark:text-gray-100 rounded shadow-lg max-w-md w-full p-6 transition-colors">
@@ -151,7 +158,7 @@ const App: React.FC = () => {
         )}
       </main>
 
-      {/* Footer at the bottom */}
+      {/* Footer */}
       <Footer />
     </div>
   );

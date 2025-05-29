@@ -1,20 +1,17 @@
 // src/components/ProductsList.tsx
 import React from 'react';
 import type { Product } from '../api/products';
-import StockToggle from './StockToggle';
 
 export interface ProductsListProps {
   products: Product[];
   onEdit: (product: Product) => void;
   onDelete: (id: number) => void;
-  onToggleStock: (id: number, currentlyInStock: boolean) => void;
 }
 
 const ProductsList: React.FC<ProductsListProps> = ({
   products,
   onEdit,
   onDelete,
-  onToggleStock,
 }) => {
   const today = new Date();
 
@@ -24,7 +21,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
         <table className="min-w-full table-auto divide-y divide-gray-700 text-sm text-center">
           <thead className="bg-gray-700 dark:bg-gray-800">
             <tr>
-              {['Toggle', 'Name', 'Category', 'Price', 'Expire', 'Stock', 'Actions'].map(h => (
+              {['Name', 'Category', 'Price', 'Expire', 'Stock', 'Actions'].map(h => (
                 <th
                   key={h}
                   className="px-4 py-2 font-semibold uppercase tracking-wide text-gray-300 dark:text-gray-400"
@@ -69,13 +66,6 @@ const ProductsList: React.FC<ProductsListProps> = ({
                   key={p.id}
                   className={`${expBg} ${offClass} hover:bg-gray-700`}
                 >
-                  <td className="px-4 py-2">
-                    <StockToggle
-                      id={p.id!}
-                      inStock={inStock}
-                      onToggle={onToggleStock}
-                    />
-                  </td>
                   <td className="px-4 py-2">{p.name}</td>
                   <td className="px-4 py-2">{p.category}</td>
                   <td className="px-4 py-2">${p.unitPrice.toFixed(2)}</td>

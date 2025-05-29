@@ -40,7 +40,7 @@ const Metrics: React.FC<MetricsProps> = ({ metrics }) => {
               <td className="p-2">${m.avgPrice.toFixed(2)}</td>
             </tr>
           ))}
-            <tr className="font-bold border-t border-gray-200 dark:border-gray-700 bg-yellow-900">
+            <tr className="font-bold border-t border-gray-200 dark:border-gray-700 bg-blue-900">
             <td className="p-2">Overall</td>
             <td className={`p-2 font-medium ${getStockClass(totalStock)}`}>
               {totalStock}
