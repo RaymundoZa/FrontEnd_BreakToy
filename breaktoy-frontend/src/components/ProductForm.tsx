@@ -60,7 +60,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center p-4 overflow-auto">
-      <div className="bg-white rounded shadow-lg w-full max-w-md p-6">
+      <div className="bg-white dark:bg-gray-800 dark:text-gray-100 rounded-lg shadow-lg w-full max-w-md p-6 transition-colors">
         <h2 className="text-xl font-bold mb-4">
           {initial ? 'Edit Product' : 'New Product'}
         </h2>
@@ -72,19 +72,28 @@ const ProductForm: React.FC<ProductFormProps> = ({
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
-              className="w-full border p-2 rounded"
+              className="
+                w-full border border-gray-300 dark:border-gray-600
+                bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400
+              "
             />
             {errors.name && (
               <p className="text-red-600 text-sm">{errors.name}</p>
             )}
           </div>
+
           {/* Category */}
           <div>
             <label className="block mb-1 font-medium">Category</label>
             <select
               value={category}
               onChange={e => setCategory(e.target.value)}
-              className="w-full border p-2 rounded"
+              className="
+                w-full border border-gray-300 dark:border-gray-600
+                bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400
+              "
             >
               <option value="">Select a category</option>
               {categories.map(cat => (
@@ -93,18 +102,25 @@ const ProductForm: React.FC<ProductFormProps> = ({
                 </option>
               ))}
             </select>
-    <label className="block mb-2">
-    <input
-     type="text"
-      name="category"
-      value={category}
-     onChange={e => setCategory(e.target.value)}   required
-     placeholder="Type a category"
-    className="mt-1 block w-full border rounded p-2"
-   />
-       <small className="text-gray-500">Puedes escribir una categoría nueva o usar una existente.</small>
-  </label>
+            <input
+              type="text"
+              value={category}
+              onChange={e => setCategory(e.target.value)}
+              placeholder="Type a category"
+              className="
+                mt-1 w-full border border-gray-300 dark:border-gray-600
+                bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400
+              "
+            />
+            <small className="text-gray-500 dark:text-gray-400">
+              Puedes escribir una categoría nueva o usar una existente.
+            </small>
+            {errors.category && (
+              <p className="text-red-600 text-sm">{errors.category}</p>
+            )}
           </div>
+
           {/* Unit Price */}
           <div>
             <label className="block mb-1 font-medium">Unit Price</label>
@@ -113,12 +129,17 @@ const ProductForm: React.FC<ProductFormProps> = ({
               step="0.01"
               value={unitPrice}
               onChange={e => setUnitPrice(e.target.valueAsNumber)}
-              className="w-full border p-2 rounded"
+              className="
+                w-full border border-gray-300 dark:border-gray-600
+                bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400
+              "
             />
             {errors.unitPrice && (
               <p className="text-red-600 text-sm">{errors.unitPrice}</p>
             )}
           </div>
+
           {/* Quantity */}
           <div>
             <label className="block mb-1 font-medium">Quantity In Stock</label>
@@ -126,7 +147,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
               type="number"
               value={quantityInStock}
               onChange={e => setQuantityInStock(e.target.valueAsNumber)}
-              className="w-full border p-2 rounded"
+              className="
+                w-full border border-gray-300 dark:border-gray-600
+                bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400
+              "
             />
             {errors.quantityInStock && (
               <p className="text-red-600 text-sm">
@@ -134,6 +159,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
               </p>
             )}
           </div>
+
           {/* Expiration Date */}
           <div>
             <label className="block mb-1 font-medium">Expiration Date</label>
@@ -141,21 +167,32 @@ const ProductForm: React.FC<ProductFormProps> = ({
               type="date"
               value={expirationDate}
               onChange={e => setExpirationDate(e.target.value)}
-              className="w-full border p-2 rounded"
+              className="
+                w-full border border-gray-300 dark:border-gray-600
+                bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400
+              "
             />
           </div>
         </div>
+
         {/* Actions */}
         <div className="mt-6 flex justify-end space-x-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 border rounded"
+            className="
+              px-4 py-2 border border-gray-300 dark:border-gray-600
+              rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition
+            "
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-2 bg-green-600 text-white rounded"
+            className="
+              px-4 py-2 bg-green-600 text-white rounded
+              hover:bg-green-700 transition
+            "
           >
             Save
           </button>

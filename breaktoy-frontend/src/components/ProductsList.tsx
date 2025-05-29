@@ -16,60 +16,103 @@ const ProductsList: React.FC<ProductsListProps> = ({
   onDelete,
   onToggleStock,
 }) => {
+  const today = new Date();
+
   return (
-    <table className="min-w-full bg-white rounded shadow overflow-hidden mb-4">
-      <thead className="bg-gray-200">
-        <tr>
-          <th className="p-2 text-center"><input type="checkbox" disabled /></th>
-          <th className="p-2 text-left">Category</th>
-          <th className="p-2 text-left">Name</th>
-          <th className="p-2 text-right">Price</th>
-          <th className="p-2 text-center">Expiration Date</th>
-          <th className="p-2 text-right">Stock</th>
-          <th className="p-2">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {products.map(p => {
-          const inStock = (p.quantityInStock ?? 0) > 0;
-          return (
-            <tr
-              key={p.id}
-              className={`${!inStock ? 'line-through text-gray-400' : ''}`}
-            >
-            <td className="p-2 text-center">
-              <StockToggle
-             id={p.id!}
-             inStock={(p.quantityInStock ?? 0) > 0}
-             onToggle={onToggleStock}
-             /> 
-             </td>
-              <td className="p-2">{p.category}</td>
-              <td className="p-2">{p.name}</td>
-              <td className="p-2 text-right">${p.unitPrice.toFixed(2)}</td>
-              <td className="p-2 text-center">
-                {p.expirationDate ?? '-'}
-              </td>
-              <td className="p-2 text-right">{p.quantityInStock}</td>
-              <td className="p-2 space-x-2">
-                <button
-                  onClick={() => onEdit(p)}
-                  className="text-blue-600 hover:underline"
+    <div className="bg-gray-800 text-gray-200 dark:bg-gray-900 dark:text-gray-100 rounded-lg shadow-lg overflow-hidden mb-6">
+      <div className="overflow-x-auto">
+        <table className="min-w-full table-auto divide-y divide-gray-700 text-sm text-center">
+          <thead className="bg-gray-700 dark:bg-gray-800">
+            <tr>
+              {['Toggle', 'Name', 'Category', 'Price', 'Expire', 'Stock', 'Actions'].map(h => (
+                <th
+                  key={h}
+                  className="px-4 py-2 font-semibold uppercase tracking-wide text-gray-300 dark:text-gray-400"
                 >
-                  Edit
-                </button>
-                <button
-                  onClick={() => onDelete(p.id!)}
-                  className="text-red-600 hover:underline"
-                >
-                  Delete
-                </button>
-              </td>
+                  {h}
+                </th>
+              ))}
             </tr>
-          );
-        })}
-      </tbody>
-    </table>
+          </thead>
+
+          <tbody className="divide-y divide-gray-700">
+            {products.map(p => {
+              const qty = p.quantityInStock ?? 0;
+              const inStock = qty > 0;
+
+              // expiration background
+              const expDate = p.expirationDate ? new Date(p.expirationDate) : null;
+              const daysLeft = expDate
+                ? Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+                : null;
+              const expBg = expDate
+                ? daysLeft! < 0
+                  ? 'bg-red-900'
+                  : daysLeft! <= 7
+                  ? 'bg-red-800'
+                  : daysLeft! <= 14
+                  ? 'bg-yellow-900'
+                  : 'bg-green-900'
+                : '';
+
+              // opacity if out of stock
+              const offClass = inStock ? '' : 'opacity-50';
+
+              // stock text color
+              const qtyText =
+                qty < 5 ? 'text-red-400'
+                  : qty <= 10 ? 'text-yellow-400'
+                  : 'text-green-400';
+
+              return (
+                <tr
+                  key={p.id}
+                  className={`${expBg} ${offClass} hover:bg-gray-700`}
+                >
+                  <td className="px-4 py-2">
+                    <StockToggle
+                      id={p.id!}
+                      inStock={inStock}
+                      onToggle={onToggleStock}
+                    />
+                  </td>
+                  <td className="px-4 py-2">{p.name}</td>
+                  <td className="px-4 py-2">{p.category}</td>
+                  <td className="px-4 py-2">${p.unitPrice.toFixed(2)}</td>
+                  <td className="px-4 py-2">
+                    {p.expirationDate ?? 'N/A'}
+                  </td>
+                  <td className={`px-4 py-2 font-semibold ${qtyText}`}>
+                    {qty}
+                  </td>
+                  <td className="px-4 py-2 space-x-2">
+                    <button
+                      onClick={() => onEdit(p)}
+                      className="text-blue-300 hover:text-blue-400"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={() => onDelete(p.id!)}
+                      className="text-red-300 hover:text-red-400"
+                    >
+                      🗑️
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Paginación */}
+      <div className="px-4 py-3 bg-gray-700 dark:bg-gray-800 flex justify-center space-x-2">
+        <button className="px-3 py-1 bg-gray-600 rounded hover:bg-gray-500">‹</button>
+        <span className="px-3 py-1 bg-gray-600 rounded">1</span>
+        <button className="px-3 py-1 bg-gray-600 rounded hover:bg-gray-500">›</button>
+      </div>
+    </div>
   );
 };
 
