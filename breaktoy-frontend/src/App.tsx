@@ -1,11 +1,12 @@
 // src/App.tsx
 import React, { useEffect, useState } from 'react';
-import Header from './components/Header';    
-import Footer from './components/Footer';    
+import Header from './components/Header';
+import Footer from './components/Footer';
 import ProductsList from './components/ProductsList';
-import Metrics from './components/Metrics';
 import ProductForm from './components/ProductForm';
 import SearchBar from './components/SearchBar';
+import MetricsTable from './components/MetricsTable';
+import MetricsGraphics from './components/MetricsGraphics';
 import type { Product, Metrics as MetricsType } from './api/products';
 import {
   fetchProducts,
@@ -13,22 +14,21 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  markInStock,
+  markOutOfStock,
 } from './api/products';
 
 const pageSize = 10;
 
 const App: React.FC = () => {
-  // —— Dark mode always on ——
   useEffect(() => {
     document.documentElement.classList.add('dark');
   }, []);
 
-  // —— Search & filter state ——
   const [name, setName] = useState<string>('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [availability, setAvailability] = useState<'all' | 'inStock' | 'outOfStock'>('all');
 
-  // —— Data & pagination ——
   const [products, setProducts] = useState<Product[]>([]);
   const [metrics, setMetrics] = useState<MetricsType | null>(null);
   const [page, setPage] = useState<number>(0);
@@ -48,7 +48,9 @@ const App: React.FC = () => {
   });
 
   const loadProducts = async () => {
-    const res = await fetchProducts({ ...buildFilters(), page, size: pageSize });
+    const filters = buildFilters();
+    console.log('Enviando filtros:', filters);
+    const res = await fetchProducts({ ...filters, page, size: pageSize });
     setProducts(res.data);
   };
 
@@ -57,24 +59,20 @@ const App: React.FC = () => {
     setMetrics(res.data);
   };
 
-  // extract unique categories whenever products change
   useEffect(() => {
     setCategories(Array.from(new Set(products.map(p => p.category))));
   }, [products]);
 
-  // reload on filters or page change
   useEffect(() => {
     loadProducts();
     loadMetrics();
   }, [name, selectedCategories, availability, page]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-900 text-gray-100">
-      {/* Header */}
+    <div id="top" className="min-h-screen flex flex-col bg-gray-900 text-gray-100">
       <Header />
 
       <main className="flex-grow p-6">
-        {/* Search + Filters */}
         <SearchBar
           name={name}
           onNameChange={setName}
@@ -83,39 +81,43 @@ const App: React.FC = () => {
           onCategoriesChange={setSelectedCategories}
           availability={availability}
           onAvailabilityChange={setAvailability}
-          onSearch={() => {
+          onSearch={() => { setPage(0); loadProducts(); loadMetrics(); }}
+          onClear={() => {
+            setName('');
+            setSelectedCategories([]);
+            setAvailability('all');
             setPage(0);
             loadProducts();
             loadMetrics();
           }}
         />
 
-        {/* New Product */}
         <button
-          onClick={() => {
-            setEditing(null);
-            setShowForm(true);
-          }}
+          onClick={() => { setEditing(null); setShowForm(true); }}
           className="mb-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
         >
           + New Product
         </button>
 
-        {/* Product List */}
         <ProductsList
           products={products}
-          onEdit={p => {
-            setEditing(p);
-            setShowForm(true);
-          }}
+          onEdit={p => { setEditing(p); setShowForm(true); }}
           onDelete={async id => {
             await deleteProduct(id);
-            loadProducts();
-            loadMetrics();
+            await loadProducts();
+            await loadMetrics();
+          }}
+          onToggleStock={async (id, currentlyInStock, newQty) => {
+            if (currentlyInStock) {
+              await markOutOfStock(id);
+            } else {
+              await markInStock(id, newQty ?? 0);
+            }
+            await loadProducts();
+            await loadMetrics();
           }}
         />
 
-        {/* Pagination */}
         <div className="flex justify-center items-center space-x-4 my-6">
           <button
             onClick={() => setPage(prev => Math.max(prev - 1, 0))}
@@ -134,10 +136,16 @@ const App: React.FC = () => {
           </button>
         </div>
 
-        {/* Metrics below */}
-        {metrics && <Metrics metrics={metrics} />}
+        {metrics && (
+          <div id="metrics" className="scroll-mt-20">
+              <h2 className="text-3xl font-semibold mb-8 mt-15 text-center text-gray-100">
+      Metrics Inventory
+      </h2>
+            <MetricsTable metrics={metrics} />
+            <MetricsGraphics metrics={metrics} />
+          </div>
+        )}
 
-        {/* Product Form Modal */}
         {showForm && (
           <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex justify-center items-start p-4 overflow-auto">
             <div className="bg-white dark:bg-gray-800 dark:text-gray-100 rounded shadow-lg max-w-md w-full p-6 transition-colors">
@@ -158,7 +166,6 @@ const App: React.FC = () => {
         )}
       </main>
 
-      {/* Footer */}
       <Footer />
     </div>
   );

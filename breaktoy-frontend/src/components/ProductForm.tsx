@@ -19,26 +19,26 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const [category, setCategory] = useState('');
   const [unitPrice, setUnitPrice] = useState<number | ''>('');
   const [quantityInStock, setQuantityInStock] = useState<number | ''>('');
-  const [expirationDate, setExpirationDate] = useState<string>('');
+  const [outOfStock, setOutOfStock] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // load initial values
   useEffect(() => {
     if (initial) {
-      setName(initial.name || '');
-      setCategory(initial.category || '');
+      setName(initial.name);
+      setCategory(initial.category);
       setUnitPrice(initial.unitPrice ?? '');
       setQuantityInStock(initial.quantityInStock ?? '');
-      setExpirationDate(initial.expirationDate ?? '');
+      setOutOfStock((initial.quantityInStock ?? 0) === 0);
     }
   }, [initial]);
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!name.trim()) e.name = 'Name is required';
-    if (!category) e.category = 'Category is required';
-    if (unitPrice === '' || unitPrice < 0) e.unitPrice = 'Price must be ≥ 0';
-    if (quantityInStock === '' || quantityInStock < 0)
-      e.quantityInStock = 'Quantity must be ≥ 0';
+    if (!name.trim()) e.name = 'Required';
+    if (!category.trim()) e.category = 'Required';
+    if (unitPrice === '' || unitPrice < 0) e.unitPrice = '≥ 0';
+    if (quantityInStock === '' || quantityInStock < 0) e.quantityInStock = '≥ 0';
     return e;
   };
 
@@ -51,148 +51,136 @@ const ProductForm: React.FC<ProductFormProps> = ({
     onSubmit({
       ...(initial ?? {}),
       name: name.trim(),
-      category,
+      category: category.trim(),
       unitPrice: Number(unitPrice),
-      quantityInStock: Number(quantityInStock),
-      expirationDate: expirationDate || undefined,
+      quantityInStock: outOfStock ? 0 : Number(quantityInStock),
     });
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center p-4 overflow-auto">
-      <div className="bg-white dark:bg-gray-800 dark:text-gray-100 rounded-lg shadow-lg w-full max-w-md p-6 transition-colors">
-        <h2 className="text-xl font-bold mb-4">
-          {initial ? 'Edit Product' : 'New Product'}
+      <div className="bg-gray-800 text-gray-100 rounded-lg shadow-lg w-full max-w-md p-6 space-y-6 transition-colors">
+        <h2 className="text-xl font-semibold text-center">
+          {initial ? 'Edit Product' : 'Add new Product'}
         </h2>
-        <div className="space-y-4">
-          {/* Name */}
-          <div>
-            <label className="block mb-1 font-medium">Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              className="
-                w-full border border-gray-300 dark:border-gray-600
-                bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400
-              "
-            />
-            {errors.name && (
-              <p className="text-red-600 text-sm">{errors.name}</p>
-            )}
-          </div>
 
-          {/* Category */}
-          <div>
-            <label className="block mb-1 font-medium">Category</label>
-            <select
-              value={category}
-              onChange={e => setCategory(e.target.value)}
-              className="
-                w-full border border-gray-300 dark:border-gray-600
-                bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400
-              "
-            >
-              <option value="">Select a category</option>
-              {categories.map(cat => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-            <input
-              type="text"
-              value={category}
-              onChange={e => setCategory(e.target.value)}
-              placeholder="Type a category"
-              className="
-                mt-1 w-full border border-gray-300 dark:border-gray-600
-                bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400
-              "
-            />
-            <small className="text-gray-500 dark:text-gray-400">
-              Puedes escribir una categoría nueva o usar una existente.
-            </small>
-            {errors.category && (
-              <p className="text-red-600 text-sm">{errors.category}</p>
-            )}
-          </div>
+        {/* Name */}
+        <div>
+          <label className="block mb-1 text-sm font-medium">
+            Product Name <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            className={`
+              w-full px-3 py-2 rounded bg-gray-700 placeholder-gray-400
+              focus:outline-none focus:ring-2 focus:ring-indigo-500
+              ${errors.name ? 'border-2 border-red-500' : 'border border-gray-600'}
+            `}
+          />
+          {errors.name && (
+            <p className="mt-1 text-xs text-red-400">{errors.name}</p>
+          )}
+        </div>
 
-          {/* Unit Price */}
+        {/* Category */}
+        <div>
+          <label className="block mb-1 text-sm font-medium">
+            Category <span className="text-red-500">*</span>
+          </label>
+          <input
+            list="categories"
+            value={category}
+            onChange={e => setCategory(e.target.value)}
+            className={`
+              w-full px-3 py-2 rounded bg-gray-700 placeholder-gray-400
+              focus:outline-none focus:ring-2 focus:ring-indigo-500
+              ${errors.category ? 'border-2 border-red-500' : 'border border-gray-600'}
+            `}
+            placeholder="Type or select…"
+          />
+          <datalist id="categories">
+            {categories.map(cat => (
+              <option key={cat} value={cat} />
+            ))}
+          </datalist>
+          {errors.category && (
+            <p className="mt-1 text-xs text-red-400">{errors.category}</p>
+          )}
+        </div>
+
+        {/* Price & Quantity */}
+        <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block mb-1 font-medium">Unit Price</label>
-            <input
-              type="number"
-              step="0.01"
-              value={unitPrice}
-              onChange={e => setUnitPrice(e.target.valueAsNumber)}
-              className="
-                w-full border border-gray-300 dark:border-gray-600
-                bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400
-              "
-            />
+            <label className="block mb-1 text-sm font-medium">
+              Price <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-2 text-gray-400">$</span>
+              <input
+                type="number"
+                step="0.01"
+                value={unitPrice}
+                onChange={e => setUnitPrice(e.target.valueAsNumber)}
+                className={`
+                  w-full pl-6 pr-3 py-2 rounded bg-gray-700 placeholder-gray-400
+                  focus:outline-none focus:ring-2 focus:ring-indigo-500
+                  ${errors.unitPrice ? 'border-2 border-red-500' : 'border border-gray-600'}
+                `}
+              />
+            </div>
             {errors.unitPrice && (
-              <p className="text-red-600 text-sm">{errors.unitPrice}</p>
+              <p className="mt-1 text-xs text-red-400">{errors.unitPrice}</p>
             )}
           </div>
-
-          {/* Quantity */}
           <div>
-            <label className="block mb-1 font-medium">Quantity In Stock</label>
+            <label className="block mb-1 text-sm font-medium">
+              Quantity <span className="text-red-500">*</span>
+            </label>
             <input
               type="number"
               value={quantityInStock}
               onChange={e => setQuantityInStock(e.target.valueAsNumber)}
-              className="
-                w-full border border-gray-300 dark:border-gray-600
-                bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400
-              "
+              className={`
+                w-full px-3 py-2 rounded bg-gray-700 placeholder-gray-400
+                focus:outline-none focus:ring-2 focus:ring-indigo-500
+                ${errors.quantityInStock
+                  ? 'border-2 border-red-500'
+                  : 'border border-gray-600'}
+              `}
             />
             {errors.quantityInStock && (
-              <p className="text-red-600 text-sm">
-                {errors.quantityInStock}
-              </p>
+              <p className="mt-1 text-xs text-red-400">{errors.quantityInStock}</p>
             )}
-          </div>
-
-          {/* Expiration Date */}
-          <div>
-            <label className="block mb-1 font-medium">Expiration Date</label>
-            <input
-              type="date"
-              value={expirationDate}
-              onChange={e => setExpirationDate(e.target.value)}
-              className="
-                w-full border border-gray-300 dark:border-gray-600
-                bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400
-              "
-            />
           </div>
         </div>
 
+        {/* Out of Stock Toggle */}
+        <div className="flex items-center space-x-2">
+          <button
+            type="button"
+            onClick={() => setOutOfStock(prev => !prev)}
+            className={`
+              w-4 h-4 rounded-sm border border-gray-600
+              ${outOfStock ? 'bg-red-500' : 'bg-gray-700'}
+              focus:outline-none
+            `}
+          />
+          <span className="text-sm">Out of Stock</span>
+        </div>
+
         {/* Actions */}
-        <div className="mt-6 flex justify-end space-x-2">
+        <div className="flex justify-end space-x-3 pt-4 border-t border-gray-700">
           <button
             onClick={onClose}
-            className="
-              px-4 py-2 border border-gray-300 dark:border-gray-600
-              rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition
-            "
+            className="px-4 py-2 text-sm rounded bg-gray-700 hover:bg-gray-600 transition"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="
-              px-4 py-2 bg-green-600 text-white rounded
-              hover:bg-green-700 transition
-            "
+            className="px-4 py-2 text-sm rounded bg-indigo-600 hover:bg-indigo-700 transition text-white"
           >
             Save
           </button>

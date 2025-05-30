@@ -1,5 +1,12 @@
+// src/api/products.ts
 import axios from 'axios';
-const API = axios.create({ baseURL: 'http://localhost:9090' });
+import qs from 'qs';
+
+const API = axios.create({
+  baseURL: 'http://localhost:9090',
+  paramsSerializer: params =>
+    qs.stringify(params, { arrayFormat: 'repeat' }),
+});
 
 export interface Product {
   id?: number;
@@ -14,11 +21,10 @@ export interface Metrics {
   totalStock: number;
   totalValue: number;
   avgPrice: number;
-  byCategory: Record<string, {
-    totalStock: number;
-    totalValue: number;
-    avgPrice: number;
-  }>;
+  byCategory: Record<
+    string,
+    { totalStock: number; totalValue: number; avgPrice: number }
+  >;
 }
 
 // Listar con filtros, orden y paginación
@@ -26,13 +32,18 @@ export const fetchProducts = (params: Record<string, any>) =>
   API.get<Product[]>('/products', { params });
 
 // CRUD básico
-export const createProduct = (p: Product)  => API.post<Product>('/products', p);
-export const updateProduct = (id: number, p: Product) => API.put<Product>(`/products/${id}`, p);
-export const deleteProduct = (id: number) => API.delete(`/products/${id}`);
+export const createProduct = (p: Product) =>
+  API.post<Product>('/products', p);
+export const updateProduct = (id: number, p: Product) =>
+  API.put<Product>(`/products/${id}`, p);
+export const deleteProduct = (id: number) =>
+  API.delete(`/products/${id}`);
 
 // Stock toggle
 export const markInStock = (id: number, quantity = 10) =>
-  API.put<Product>(`/products/${id}/instock`, null, { params: { quantity } });
+  API.put<Product>(`/products/${id}/instock`, null, {
+    params: { quantity },
+  });
 export const markOutOfStock = (id: number) =>
   API.post<Product>(`/products/${id}/outofstock`);
 

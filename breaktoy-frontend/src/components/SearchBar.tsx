@@ -1,6 +1,6 @@
 // src/components/SearchBar.tsx
 import React, { useState } from 'react';
-import { FiFilter, FiChevronDown, FiX } from 'react-icons/fi';
+import { FiFilter, FiX } from 'react-icons/fi';
 
 export interface SearchBarProps {
   name: string;
@@ -11,6 +11,7 @@ export interface SearchBarProps {
   availability: 'all' | 'inStock' | 'outOfStock';
   onAvailabilityChange: (value: 'all' | 'inStock' | 'outOfStock') => void;
   onSearch: () => void;
+  onClear: () => void;              // ← Nuevo prop
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
@@ -22,95 +23,121 @@ const SearchBar: React.FC<SearchBarProps> = ({
   availability,
   onAvailabilityChange,
   onSearch,
+  onClear,                         // ← Desestructuramos onClear
 }) => {
   const [showFilters, setShowFilters] = useState(false);
 
+  const toggleCategory = (cat: string) => {
+    if (selectedCategories.includes(cat)) {
+      onCategoriesChange(selectedCategories.filter(c => c !== cat));
+    } else {
+      onCategoriesChange([...selectedCategories, cat]);
+    }
+  };
+
   return (
     <div className="relative mb-6">
-      {/* Input + Filter Icon */}
-      <div className="flex items-center bg-gray-700 dark:bg-gray-800 rounded-md shadow px-3 py-2">
+      {/* Search input + filter toggle */}
+      <div className="flex items-center bg-gray-700 dark:bg-gray-800 rounded-md shadow px-4 py-2">
         <input
           type="text"
           value={name}
           onChange={e => onNameChange(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && onSearch()}
-          placeholder="Buscar por nombre..."
-          className="flex-1 bg-transparent text-gray-200 placeholder-gray-400
-                     focus:outline-none text-sm"
+          placeholder="Search by name..."
+          className="flex-1 bg-transparent text-gray-100 placeholder-gray-400 focus:outline-none"
         />
         <button
-          onClick={() => setShowFilters(prev => !prev)}
-          className="ml-2 text-gray-300 hover:text-white focus:outline-none"
-          aria-label="Toggle filters"
+          onClick={() => setShowFilters(f => !f)}
+          className="ml-3 text-gray-300 hover:text-white focus:outline-none"
         >
-          {showFilters ? <FiX size={20}/> : <FiFilter size={20}/>}
+          {showFilters ? <FiX size={20} /> : <FiFilter size={20} />}
         </button>
-        <FiChevronDown
-          className={`ml-2 text-gray-400 transition-transform ${
-            showFilters ? 'rotate-180' : 'rotate-0'
-          }`}
-        />
       </div>
 
-      {/* Panel de filtros desplegable */}
+      {/* Filter panel */}
       {showFilters && (
-        <div
-          className="absolute z-10 w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100
-                     rounded-md shadow-lg mt-2 p-4 space-y-4"
-        >
-          {/* Categorías */}
-          <div>
-            <label className="block text-sm font-medium mb-1">Categorías</label>
-            <select
-              multiple
-              value={selectedCategories}
-              onChange={e =>
-                onCategoriesChange(
-                  Array.from(e.target.selectedOptions, o => o.value)
-                )
-              }
-              className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1
-                         bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            >
+        <div className="absolute z-10 w-full bg-gray-700 dark:bg-gray-800 rounded-md shadow-lg mt-2 p-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-100">
+          
+          {/* Availability */}
+          <div className="space-y-2 p-3 bg-gray-600 dark:bg-gray-700 rounded">
+            <p className="font-semibold mb-1">Availability</p>
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                name="avail"
+                value="all"
+                checked={availability === 'all'}
+                onChange={() => onAvailabilityChange('all')}
+                className="form-radio text-indigo-400"
+              />
+              <span>All</span>
+            </label>
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                name="avail"
+                value="inStock"
+                checked={availability === 'inStock'}
+                onChange={() => onAvailabilityChange('inStock')}
+                className="form-radio text-indigo-400"
+              />
+              <span>In Stock</span>
+            </label>
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                name="avail"
+                value="outOfStock"
+                checked={availability === 'outOfStock'}
+                onChange={() => onAvailabilityChange('outOfStock')}
+                className="form-radio text-indigo-400"
+              />
+              <span>Out of Stock</span>
+            </label>
+          </div>
+
+          {/* Categories */}
+          <div className="space-y-2 p-3 bg-gray-600 dark:bg-gray-700 rounded">
+            <p className="font-semibold mb-1">Filter by Category</p>
+            <div className="flex flex-wrap gap-3">
               {categories.map(cat => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
+                <label key={cat} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedCategories.includes(cat)}
+                    onChange={() => toggleCategory(cat)}
+                    className="form-checkbox text-indigo-400"
+                  />
+                  <span>{cat}</span>
+                </label>
               ))}
-            </select>
+            </div>
           </div>
 
-          {/* Disponibilidad */}
-          <div>
-            <label className="block text-sm font-medium mb-1">Disponibilidad</label>
-            <select
-              value={availability}
-              onChange={e =>
-                onAvailabilityChange(e.target.value as any)
-              }
-              className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1
-                         bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          {/* Action buttons */}
+          <div className="md:col-span-2 flex justify-end space-x-3">
+            <button
+              onClick={() => {
+                onClear();            // ← limpiamos filtros
+                setShowFilters(false);
+              }}
+              className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-1 rounded"
             >
-              <option value="all">All</option>
-              <option value="inStock">In Stock</option>
-              <option value="outOfStock">Out of Stock</option>
-            </select>
-          </div>
-
-          {/* Botones Apply / Close */}
-          <div className="flex justify-end space-x-2">
+              Clear
+            </button>
             <button
               onClick={() => {
                 onSearch();
                 setShowFilters(false);
               }}
-              className="bg-indigo-600 text-white px-3 py-1 rounded-md text-sm hover:bg-indigo-700"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1 rounded"
             >
               Apply
             </button>
             <button
               onClick={() => setShowFilters(false)}
-              className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-md text-sm hover:bg-gray-300 dark:hover:bg-gray-600"
+              className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-1 rounded"
             >
               Close
             </button>
