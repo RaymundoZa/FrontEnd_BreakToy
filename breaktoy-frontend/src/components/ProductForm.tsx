@@ -156,20 +156,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
           </div>
         </div>
 
-        {/* Out of Stock Toggle */}
-        <div className="flex items-center space-x-2">
-          <button
-            type="button"
-            onClick={() => setOutOfStock(prev => !prev)}
-            className={`
-              w-4 h-4 rounded-sm border border-gray-600
-              ${outOfStock ? 'bg-red-500' : 'bg-gray-700'}
-              focus:outline-none
-            `}
-          />
-          <span className="text-sm">Out of Stock</span>
-        </div>
-
         {/* Actions */}
         <div className="flex justify-end space-x-3 pt-4 border-t border-gray-700">
           <button
