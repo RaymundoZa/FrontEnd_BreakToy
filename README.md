@@ -21,12 +21,12 @@ This is the frontend application for the Inventory Management system built as pa
 
 ## 📁 Folder Structure
 
-src/
-├── api/ # Axios configuration and API methods
-├── components/ # Reusable UI components (ProductForm, SearchBar, etc.)
-├── assets/ # Logos and images
-├── App.tsx # Main app logic and routing
-└── main.tsx # Entry point
+- `src/`
+  - `api/`: Axios configuration and API methods
+  - `components/`: Reusable UI components (ProductForm, SearchBar, etc.)
+  - `assets/`: Logos and images
+  - `App.tsx`: Main app logic and routing
+  - `main.tsx`: Entry point
 
 
 ## 🔧 Setup & Run
@@ -44,23 +44,38 @@ npm run build
 The app will be available at: http://localhost:8080
 
 Make sure the backend is running on http://localhost:9090
+
+--- 
+
 ### 🔄 API Integration
 
 This frontend connects to a REST API built with Spring Boot.
 All API calls are handled using Axios via the methods in src/api/products.ts.
 
+--- 
+
 ### 📊 Metrics
 
 We use Chart.js to display:
 
-Total stock per category
-Average price per category
+- Total stock per category
+- Average price per category
 These charts are automatically updated when product data changes.
+
+--- 
 
 ### 📦 Deployment
 
 This project is built with Vite, making it easy to deploy to:
 
-GitHub Pages
-Netlify / Vercel
-Docker container (with NGINX)
+- GitHub Pages
+- Netlify / Vercel
+- Docker container (with NGINX)
+  
+---
+
+## 👨‍💻 Author
+
+Raymundo Daniel Zamora Juárez
+
+Encora SPARK Program · 2025
