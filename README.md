@@ -38,15 +38,18 @@ npm install
 
 npm run dev
 
+npm run build
+```
+
 The app will be available at: http://localhost:8080
 
 Make sure the backend is running on http://localhost:9090
-🔄 API Integration
+### 🔄 API Integration
 
 This frontend connects to a REST API built with Spring Boot.
 All API calls are handled using Axios via the methods in src/api/products.ts.
 
-📊 Metrics
+### 📊 Metrics
 
 We use Chart.js to display:
 
@@ -54,13 +57,10 @@ Total stock per category
 Average price per category
 These charts are automatically updated when product data changes.
 
-📦 Deployment
+### 📦 Deployment
 
 This project is built with Vite, making it easy to deploy to:
 
 GitHub Pages
 Netlify / Vercel
 Docker container (with NGINX)
-To build:
-npm run build
-
